@@ -43,6 +43,15 @@ async function apiFetch(path, { method = "GET", body, auth = false } = {}) {
   }
 
   if (!response.ok) {
+    // A 401, or a 403 with NO message body, means Spring Security rejected the
+    // login token itself (expired after 24h, or the account no longer exists).
+    // A real permission problem (e.g. editing someone else's trip) comes back
+    // as a 403 WITH a message, so it is handled below as a normal error.
+    if (auth && (response.status === 401 || (response.status === 403 && !data))) {
+      clearSession();
+      if (typeof renderNavAuth === "function") renderNavAuth();
+      throw new Error("Your login session has expired (sessions last 24 hours). Please log in again, then retry.");
+    }
     const message =
       (data && (data.message || data.error)) ||
       `Request failed with status ${response.status}`;
