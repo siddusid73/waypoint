@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t=localStorage.getItem('waypoint_theme')||'explorer';document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Self-test — Waypoint</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .test-row { display:flex; gap:14px; align-items:flex-start; background:var(--paper); border:1px solid var(--line);
+              border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; }
+  .test-status { width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center;
+                 justify-content:center; font-weight:700; font-size:0.85rem; color:#fff; background:var(--sage); }
+  .test-status.pass { background:#3f8a5a; }
+  .test-status.fail { background:var(--danger); }
+  .test-body strong { display:block; }
+  .test-body span { font-size:0.85rem; color:var(--ink-soft); word-break:break-word; }
+  .test-time { margin-left:auto; font-size:0.78rem; color:var(--sage); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="pin-fill" d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.01 11.44a1.5 1.5 0 0 0 1.98 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8z"/><circle class="pin-dot" cx="12" cy="10" r="3.2"/></svg>
+      Waypoint
+    </a>
+    <div class="nav-links"><a href="index.html">Back to Browse</a></div>
+    <div id="nav-auth"></div>
+  </div>
+</nav>
+
+<main class="container section" style="max-width:780px;">
+  <h1>Self-test</h1>
+  <p>Checks every service Waypoint depends on, straight from your browser. If something fails, the reason is shown next to it. Send me a screenshot of this page.</p>
+  <button class="btn btn-primary" id="rerun">Run tests again</button>
+  <div id="results" style="margin-top:22px;"></div>
+  <p class="field-hint" id="env-note"></p>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/geocode.js"></script>
+<script src="js/routing.js"></script>
+<script src="js/places.js"></script>
+<script>
+const TESTS = [
+  {
+    name: "Backend API (your Spring Boot app)",
+    detail: () => API_BASE + "/trips",
+    run: async () => {
+      const r = await fetch(API_BASE + "/trips?size=1");
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const d = await r.json();
+      return "Reachable. " + d.totalElements + " public trip(s) in the database.";
+    },
+  },
+  {
+    name: "Map tiles (OpenStreetMap)",
+    detail: () => "tile.openstreetmap.org",
+    run: () => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve("Tile image loaded.");
+      img.onerror = () => reject(new Error("Tile image failed to load (blocked, offline, or rate-limited)."));
+      img.src = "https://tile.openstreetmap.org/3/4/3.png?cachebust=" + Date.now();
+    }),
+  },
+  {
+    name: "Place search (Photon)",
+    detail: () => PHOTON_BASE + "?q=Kyoto",
+    run: async () => {
+      const res = await geocodeSearch("Kyoto", 3);
+      if (!res.length) throw new Error("Service answered but returned no matches for 'Kyoto'.");
+      return "Found: " + res[0].displayName;
+    },
+  },
+  {
+    name: "Driving route (OSRM)",
+    detail: () => ROUTING_SERVERS.join("  then  "),
+    run: async () => {
+      const route = await calculateDrivingRoute([
+        { latitude: 48.8566, longitude: 2.3522 },  // Paris
+        { latitude: 45.7640, longitude: 4.8357 },  // Lyon
+      ]);
+      if (!route) throw new Error("No routing server returned a route (see Console for each server's error).");
+      return "Paris to Lyon: " + route.distanceKm + " km, ~" + formatDuration(route.durationMin) + " via " + new URL(route.server).host;
+    },
+  },
+  {
+    name: "Nearby places (Photon, Overpass as backup)",
+    detail: () => PHOTON_REVERSE + "  then  " + OVERPASS_SERVERS.join("  then  "),
+    run: async () => {
+      const places = await findNearbyPlaces(48.8566, 2.3522, 1500, "restaurants");
+      if (places === null) throw new Error("Photon and every Overpass mirror failed (see Console for each error).");
+      if (!places.length) throw new Error("Service answered via " + lastPlacesProvider + " but found no restaurants near central Paris.");
+      return places.length + " restaurant(s) near central Paris via " + lastPlacesProvider + ", e.g. " + places[0].name + ".";
+    },
+  },
+];
+
+async function runAll() {
+  const out = document.getElementById("results");
+  out.innerHTML = "";
+  for (const test of TESTS) {
+    const row = document.createElement("div");
+    row.className = "test-row";
+    row.innerHTML = `<div class="test-status">…</div>
+      <div class="test-body"><strong>${escapeHtml(test.name)}</strong><span>Testing…</span></div>
+      <div class="test-time"></div>`;
+    out.appendChild(row);
+
+    const started = performance.now();
+    const status = row.querySelector(".test-status");
+    const msg = row.querySelector(".test-body span");
+    try {
+      const text = await test.run();
+      status.textContent = "✓"; status.classList.add("pass");
+      msg.textContent = text;
+    } catch (err) {
+      status.textContent = "✕"; status.classList.add("fail");
+      msg.textContent = (err && err.message ? err.message : String(err)) + "   [" + test.detail() + "]";
+    }
+    row.querySelector(".test-time").textContent = Math.round(performance.now() - started) + " ms";
+  }
+}
+
+document.getElementById("env-note").textContent =
+  "Page origin: " + location.origin + "  |  Folder: " + location.pathname +
+  "  |  places.js: " + (typeof PHOTON_REVERSE !== "undefined" ? "NEW (Photon-first)" : "OLD - replace your frontend folder") +
+  "  |  Browser: " + navigator.userAgent.split(") ").slice(-1)[0];
+document.getElementById("rerun").addEventListener("click", runAll);
+runAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t=localStorage.getItem('waypoint_theme')||'explorer';document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign up — Waypoint</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="pin-fill" d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.01 11.44a1.5 1.5 0 0 0 1.98 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8z"/><circle class="pin-dot" cx="12" cy="10" r="3.2"/></svg>
+      Waypoint
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><svg data-lucide="compass"></svg>Browse</a>
+      <a href="create-trip.html"><svg data-lucide="route"></svg>Create a trip</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div id="theme-switcher-slot"></div>
+      <div id="nav-auth"></div>
+    </div>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card reveal" id="auth-card">
+    <h1>Create your account</h1>
+    <p>Start planning and sharing road trips in a minute.</p>
+    <div id="alert-box" class="alert"></div>
+    <form id="register-form">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required minlength="6" />
+        <div class="field-hint">At least 6 characters.</div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block"><svg data-lucide="user-plus"></svg>Create account</button>
+    </form>
+    <div class="auth-switch">Already have an account? <a href="login.html">Log in</a></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="js/api.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/nav.js"></script>
+<script>
+requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("auth-card").classList.add("in")));
+
+document.getElementById("register-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const alertBox = document.getElementById("alert-box");
+  try {
+    const result = await Api.register({
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("password").value,
+    });
+    setSession(result.token, { userId: result.userId, name: result.name, email: result.email });
+    window.location.href = "index.html";
+  } catch (err) {
+    showAlert(alertBox, err.message, "error");
+  }
+});
+</script>
+</body>
+</html>

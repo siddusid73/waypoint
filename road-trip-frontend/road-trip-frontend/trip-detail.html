@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t=localStorage.getItem('waypoint_theme')||'explorer';document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trip details — Waypoint</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="pin-fill" d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.01 11.44a1.5 1.5 0 0 0 1.98 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8z"/><circle class="pin-dot" cx="12" cy="10" r="3.2"/></svg>
+      Waypoint
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><svg data-lucide="compass"></svg>Browse</a>
+      <a href="create-trip.html"><svg data-lucide="route"></svg>Create a trip</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div id="theme-switcher-slot"></div>
+      <div id="nav-auth"></div>
+    </div>
+  </div>
+</nav>
+
+<div id="loading" class="container"><div class="loading-state"><span class="spinner"></span>Loading trip…</div></div>
+
+<div id="trip-content" style="display:none;">
+  <header class="detail-header">
+    <div class="container">
+      <div class="detail-top-row">
+        <div>
+          <div class="detail-owner" id="trip-owner"></div>
+          <h1 id="trip-title"></h1>
+          <div class="route-line" id="trip-route"></div>
+        </div>
+        <div class="owner-actions" id="owner-actions" style="display:none;">
+          <a href="#" id="edit-link" class="btn btn-secondary btn-sm"><svg data-lucide="pencil"></svg>Edit trip</a>
+          <button id="delete-btn" class="btn btn-danger btn-sm"><svg data-lucide="trash-2"></svg>Delete</button>
+        </div>
+      </div>
+      <div class="detail-stats">
+        <div class="stat"><strong id="stat-duration">—</strong>days</div>
+        <div class="stat"><strong id="stat-distance">—</strong>km</div>
+        <div class="stat"><strong id="stat-rating">—</strong>avg. rating</div>
+        <div class="stat"><strong id="stat-stops">—</strong>stops</div>
+        <div class="stat"><strong id="stat-visibility">—</strong>visibility</div>
+      </div>
+      <div id="route-info-wrap"></div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="detail-grid">
+      <div>
+        <h2><svg data-lucide="map" style="width:20px;height:20px;vertical-align:-3px;margin-right:6px;"></svg>Route</h2>
+        <div id="detail-map" class="detail-map"></div>
+
+        <div class="nearby-panel">
+          <h2 style="margin-top:28px;"><svg data-lucide="sparkles" style="width:20px;height:20px;vertical-align:-3px;margin-right:6px;"></svg>Nearby along this route</h2>
+          <p class="field-hint" style="margin-top:-6px;">Real places from OpenStreetMap, found near this trip's stops.</p>
+          <div class="category-bar" id="nearby-category-bar"></div>
+          <ul class="nearby-list" id="nearby-list"></ul>
+        </div>
+      </div>
+      <div>
+        <h2>Description</h2>
+        <p id="trip-description"></p>
+
+        <h2>Stops</h2>
+        <ul class="stop-list" id="stop-list"></ul>
+
+        <div class="comments-section">
+          <h2>Comments</h2>
+          <div id="comment-form-wrap"></div>
+          <div id="comment-list"></div>
+        </div>
+
+        <div class="comments-section">
+          <h2>Rate this trip</h2>
+          <div id="rating-widget-wrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">Waypoint — a road trip sharing platform. Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> &middot; Routes: OSRM / FOSSGIS &middot; Place search: Photon &middot; <a href="https://www.openstreetmap.org/fixthemap">Fix the map</a></div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="js/api.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/routing.js"></script>
+<script src="js/places.js"></script>
+<script src="js/trip-detail.js"></script>
+</body>
+</html>

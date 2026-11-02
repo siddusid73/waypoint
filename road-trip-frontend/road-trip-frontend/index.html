@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t=localStorage.getItem('waypoint_theme')||'explorer';document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Waypoint — Browse road trips around the world</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="pin-fill" d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.01 11.44a1.5 1.5 0 0 0 1.98 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8z"/><circle class="pin-dot" cx="12" cy="10" r="3.2"/></svg>
+      Waypoint
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="active"><svg data-lucide="compass"></svg>Browse</a>
+      <a href="create-trip.html"><svg data-lucide="route"></svg>Create a trip</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div id="theme-switcher-slot"></div>
+      <div id="nav-auth"></div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-eyebrow hero-animate-1">Road trips, everywhere</div>
+      <h1 class="hero-animate-1">Plan the route.<br>Share the journey.</h1>
+      <p class="lede hero-animate-2">Browse road trips planned by travelers around the world, or map out your own — stop by stop, with photos and notes along the way.</p>
+      <form class="search-bar hero-animate-2" id="search-form">
+        <input type="text" id="keyword-input" placeholder="Search by place, e.g. &quot;Iceland&quot; or &quot;coast&quot;" />
+        <button type="submit" class="btn btn-primary"><svg data-lucide="search"></svg>Search</button>
+      </form>
+      <div class="tag-chips hero-animate-3" id="tag-chips"></div>
+    </div>
+    <div id="hero-map" class="hero-map hero-animate-3"></div>
+  </div>
+</header>
+
+<main class="container section">
+  <div class="section-head">
+    <h2 id="results-heading">All trips</h2>
+  </div>
+  <div id="trip-grid" class="trip-grid reveal-stagger">
+    <div class="loading-state"><span class="spinner"></span>Loading trips…</div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Waypoint — a road trip sharing platform. Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> &middot; Routes: OSRM / FOSSGIS &middot; Place search: Photon &middot; <a href="https://www.openstreetmap.org/fixthemap">Fix the map</a></div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="js/api.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/browse.js"></script>
+</body>
+</html>

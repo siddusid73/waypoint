@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t=localStorage.getItem('waypoint_theme')||'explorer';document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My trips — Waypoint</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="pin-fill" d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.01 11.44a1.5 1.5 0 0 0 1.98 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8z"/><circle class="pin-dot" cx="12" cy="10" r="3.2"/></svg>
+      Waypoint
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><svg data-lucide="compass"></svg>Browse</a>
+      <a href="create-trip.html"><svg data-lucide="route"></svg>Create a trip</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div id="theme-switcher-slot"></div>
+      <div id="nav-auth"></div>
+    </div>
+  </div>
+</nav>
+
+<main class="container section">
+  <div class="section-head">
+    <h1>My trips</h1>
+    <a href="create-trip.html" class="btn btn-primary"><svg data-lucide="plus"></svg>New trip</a>
+  </div>
+  <div id="guard" style="display:none;" class="empty-state">You need to <a href="login.html">log in</a> to see your trips.</div>
+  <div id="trip-grid" class="trip-grid reveal-stagger"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Waypoint — a road trip sharing platform.</div>
+</footer>
+
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="js/api.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/nav.js"></script>
+<script>
+function cardHtml(trip) {
+  const rating = trip.averageRating ? trip.averageRating.toFixed(1) : "—";
+  const tags = (trip.tags || []).map((t) => `<span class="tag-pill">${escapeHtml(t)}</span>`).join("");
+  return `
+    <article class="trip-card">
+      <span class="visibility-pill" style="align-self:flex-start;">${trip.visibility ?? ""}</span>
+      <h3><a href="trip-detail.html?id=${trip.id}">${escapeHtml(trip.title)}</a></h3>
+      <div class="route-line">${escapeHtml(trip.startLocation ?? "?")} &rarr; ${escapeHtml(trip.endLocation ?? "?")}</div>
+      <div class="tag-list">${tags}</div>
+      <div class="trip-meta">
+        <span>${trip.durationDays ?? "?"} days</span>
+        <span class="rating">&#9733; ${rating}</span>
+      </div>
+      <a href="create-trip.html?edit=${trip.id}" class="btn btn-secondary btn-sm"><svg data-lucide="pencil"></svg>Edit</a>
+    </article>
+  `;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!isLoggedIn()) {
+    document.getElementById("guard").style.display = "block";
+    return;
+  }
+  const grid = document.getElementById("trip-grid");
+  grid.innerHTML = `<div class="loading-state"><span class="spinner"></span>Loading your trips…</div>`;
+  try {
+    const trips = await Api.myTrips();
+    grid.innerHTML = trips.length
+      ? trips.map(cardHtml).join("")
+      : `<div class="empty-state">You haven't created any trips yet. <a href="create-trip.html">Start one now</a>.</div>`;
+    if (window.lucide) lucide.createIcons();
+    requestAnimationFrame(() => requestAnimationFrame(() => grid.classList.add("in")));
+  } catch (err) {
+    grid.innerHTML = `<div class="empty-state">${escapeHtml(err.message)}</div>`;
+  }
+});
+</script>
+</body>
+</html>

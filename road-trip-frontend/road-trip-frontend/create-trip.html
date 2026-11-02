@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t=localStorage.getItem('waypoint_theme')||'explorer';document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Create a trip — Waypoint</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="pin-fill" d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.72 11.19 7.01 11.44a1.5 1.5 0 0 0 1.98 0C13.28 21.19 20 15.25 20 10c0-4.42-3.58-8-8-8z"/><circle class="pin-dot" cx="12" cy="10" r="3.2"/></svg>
+      Waypoint
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><svg data-lucide="compass"></svg>Browse</a>
+      <a href="create-trip.html" class="active"><svg data-lucide="route"></svg>Create a trip</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div id="theme-switcher-slot"></div>
+      <div id="nav-auth"></div>
+    </div>
+  </div>
+</nav>
+
+<main class="container section">
+
+  <div id="guard" style="display:none;">
+    <div class="empty-state">You need to <a href="login.html">log in</a> before creating a trip.</div>
+  </div>
+
+  <div id="form-wrap" style="max-width: 760px;">
+    <h1 id="page-title">Create a trip</h1>
+    <p>Describe the journey first, then search or click the map to drop stops anywhere in the world.</p>
+
+    <div class="stepper">
+      <div class="step-pill active" id="step-pill-1"><span class="num">1</span>Trip details</div>
+      <div class="step-pill" id="step-pill-2"><span class="num">2</span>Add stops</div>
+    </div>
+
+    <div id="alert-box" class="alert"></div>
+
+    <!-- STEP 1 -->
+    <div class="step-panel active" id="step-1">
+      <form id="trip-form">
+        <div class="field">
+          <label for="title">Trip title</label>
+          <input type="text" id="title" required placeholder="e.g. Pacific Coast Highway Road Trip" />
+        </div>
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" placeholder="What makes this route worth driving?"></textarea>
+        </div>
+        <div class="field field-row">
+          <div class="autocomplete-wrap">
+            <label for="start-location">Start location</label>
+            <input type="text" id="start-location" placeholder="Search anywhere in the world…" autocomplete="off" />
+            <div class="autocomplete-list" id="start-location-list"></div>
+          </div>
+          <div class="autocomplete-wrap">
+            <label for="end-location">End location</label>
+            <input type="text" id="end-location" placeholder="Search anywhere in the world…" autocomplete="off" />
+            <div class="autocomplete-list" id="end-location-list"></div>
+          </div>
+        </div>
+        <div class="field field-row">
+          <div>
+            <label for="duration-days">Duration (days)</label>
+            <input type="number" id="duration-days" min="1" />
+          </div>
+          <div>
+            <label for="total-distance">Total distance (km)</label>
+            <input type="number" id="total-distance" min="0" step="0.1" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="tags">Tags</label>
+          <input type="text" id="tags" placeholder="beach, budget, road-trip (comma-separated)" />
+          <div class="field-hint">Separate multiple tags with commas.</div>
+        </div>
+        <div class="field">
+          <label for="visibility">Visibility</label>
+          <select id="visibility">
+            <option value="PUBLIC">Public — anyone can browse this trip</option>
+            <option value="PRIVATE">Private — only visible to you</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <span></span>
+          <button type="submit" class="btn btn-primary" id="step1-submit">Save &amp; continue to stops →</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-panel" id="step-2">
+      <div class="field autocomplete-wrap">
+        <label for="place-search"><svg data-lucide="search" style="width:14px;height:14px;vertical-align:-2px;"></svg> Search for a place anywhere in the world</label>
+        <input type="text" id="place-search" placeholder="e.g. &quot;Machu Picchu&quot;, &quot;Kyoto&quot;, &quot;Banff National Park&quot;…" autocomplete="off" />
+        <div class="autocomplete-list" id="place-search-list"></div>
+      </div>
+      <p class="map-hint">Pick a result above, or click anywhere on the map, to choose a stop's location.</p>
+      <div id="stop-map" class="map-picker"></div>
+
+      <div class="field field-row">
+        <div class="field">
+          <label for="stop-name">Stop name</label>
+          <input type="text" id="stop-name" placeholder="e.g. Golden Gate Bridge" />
+        </div>
+        <div class="field">
+          <label for="stop-day">Day number</label>
+          <input type="number" id="stop-day" min="1" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="stop-description">Notes (optional)</label>
+        <input type="text" id="stop-description" placeholder="Why stop here?" />
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-stop-btn" disabled>Click the map first</button>
+
+      <h3 style="margin-top:28px;">Stops on this trip</h3>
+      <ul class="stop-draft-list" id="stop-draft-list">
+        <li style="color:var(--sage); list-style:none;">No stops added yet.</li>
+      </ul>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-text" id="back-btn">&larr; Back to details</button>
+        <a href="#" class="btn btn-primary" id="finish-btn">Finish &amp; view trip</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Waypoint — a road trip sharing platform. Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> &middot; Routes: OSRM / FOSSGIS &middot; Place search: Photon &middot; <a href="https://www.openstreetmap.org/fixthemap">Fix the map</a></div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="js/api.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/geocode.js"></script>
+<script src="js/create-trip.js"></script>
+</body>
+</html>
